@@ -23,6 +23,7 @@ use crate::constants::*;
 use crate::jsonpath::ArrayIndex;
 use crate::jsonpath::BinaryOperator;
 use crate::jsonpath::Expr;
+use crate::jsonpath::FilterFunc;
 use crate::jsonpath::Index;
 use crate::jsonpath::JsonPath;
 use crate::jsonpath::Path;
@@ -74,7 +75,7 @@ impl<'a> Selector<'a> {
     }
 
     pub fn select(&'a self, root: &'a [u8], data: &mut Vec<u8>, offsets: &mut Vec<u64>) {
-        let mut poses = self.find_positions(root);
+        let mut poses = self.find_positions(root, None, &self.json_path.paths);
 
         if self.json_path.is_predicate() {
             Self::build_predicate_result(&mut poses, data);
@@ -102,7 +103,7 @@ impl<'a> Selector<'a> {
         if self.json_path.is_predicate() {
             return true;
         }
-        let poses = self.find_positions(root);
+        let poses = self.find_positions(root, None, &self.json_path.paths);
         !poses.is_empty()
     }
 
@@ -110,20 +111,30 @@ impl<'a> Selector<'a> {
         if !self.json_path.is_predicate() {
             return Err(Error::InvalidJsonPathPredicate);
         }
-        let poses = self.find_positions(root);
+        let poses = self.find_positions(root, None, &self.json_path.paths);
         Ok(!poses.is_empty())
     }
 
-    fn find_positions(&'a self, root: &'a [u8]) -> VecDeque<Position> {
+    fn find_positions(
+        &'a self,
+        root: &'a [u8],
+        current: Option<&Position>,
+        paths: &[Path<'a>],
+    ) -> VecDeque<Position> {
         let mut poses = VecDeque::new();
-        poses.push_back(Position::Container((0, root.len())));
 
-        for path in self.json_path.paths.iter() {
+        let start_pos = if let Some(Path::Current) = paths.first() {
+            current.expect("missing current position").clone()
+        } else {
+            Position::Container((0, root.len()))
+        };
+        poses.push_back(start_pos);
+
+        for path in paths.iter() {
             match path {
-                &Path::Root => {
+                &Path::Root | &Path::Current => {
                     continue;
                 }
-                &Path::Current => unreachable!(),
                 Path::FilterExpr(expr) | Path::Predicate(expr) => {
                     let len = poses.len();
                     for _ in 0..len {
@@ -453,8 +464,16 @@ impl<'a> Selector<'a> {
                     self.compare(op, &lhs, &rhs)
                 }
             },
+            Expr::FilterFunc(filter_expr) => match filter_expr {
+                FilterFunc::Exists(paths) => self.eval_exists(root, pos, paths),
+            },
             _ => todo!(),
         }
+    }
+
+    fn eval_exists(&'a self, root: &'a [u8], pos: &Position, paths: &[Path<'a>]) -> bool {
+        let poses = self.find_positions(root, Some(pos), paths);
+        !poses.is_empty()
     }
 
     fn convert_expr_val(&'a self, root: &'a [u8], pos: &Position, expr: Expr<'a>) -> ExprValue<'a> {

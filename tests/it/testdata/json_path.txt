@@ -828,3 +828,104 @@ JsonPath {
 }
 
 
+---------- Input ----------
+$.store.book?(exists(@.price?(@ > 20)))
+---------- Output ---------
+$.store.book?(exists(@.price?(@ > 20)))
+---------- AST ------------
+JsonPath {
+    paths: [
+        Root,
+        DotField(
+            "store",
+        ),
+        DotField(
+            "book",
+        ),
+        FilterExpr(
+            FilterFunc(
+                Exists(
+                    [
+                        Current,
+                        DotField(
+                            "price",
+                        ),
+                        FilterExpr(
+                            BinaryOp {
+                                op: Gt,
+                                left: Paths(
+                                    [
+                                        Current,
+                                    ],
+                                ),
+                                right: Value(
+                                    Number(
+                                        UInt64(
+                                            20,
+                                        ),
+                                    ),
+                                ),
+                            },
+                        ),
+                    ],
+                ),
+            ),
+        ),
+    ],
+}
+
+
+---------- Input ----------
+$.store?(exists(@.book?(exists(@.category?(@ == "fiction")))))
+---------- Output ---------
+$.store?(exists(@.book?(exists(@.category?(@ == "fiction")))))
+---------- AST ------------
+JsonPath {
+    paths: [
+        Root,
+        DotField(
+            "store",
+        ),
+        FilterExpr(
+            FilterFunc(
+                Exists(
+                    [
+                        Current,
+                        DotField(
+                            "book",
+                        ),
+                        FilterExpr(
+                            FilterFunc(
+                                Exists(
+                                    [
+                                        Current,
+                                        DotField(
+                                            "category",
+                                        ),
+                                        FilterExpr(
+                                            BinaryOp {
+                                                op: Eq,
+                                                left: Paths(
+                                                    [
+                                                        Current,
+                                                    ],
+                                                ),
+                                                right: Value(
+                                                    String(
+                                                        "fiction",
+                                                    ),
+                                                ),
+                                            },
+                                        ),
+                                    ],
+                                ),
+                            ),
+                        ),
+                    ],
+                ),
+            ),
+        ),
+    ],
+}
+
+

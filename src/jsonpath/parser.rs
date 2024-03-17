@@ -361,7 +361,42 @@ fn expr_atom(input: &[u8], root_predicate: bool) -> IResult<&[u8], Expr<'_>> {
             ),
             |expr| expr,
         ),
+        map(filter_func, Expr::FilterFunc),
     ))(input)
+}
+
+fn filter_func(input: &[u8]) -> IResult<&[u8], FilterFunc<'_>> {
+    alt((exists,))(input)
+}
+
+fn exists(input: &[u8]) -> IResult<&[u8], FilterFunc<'_>> {
+    preceded(
+        tag("exists"),
+        preceded(
+            multispace0,
+            delimited(
+                terminated(char('('), multispace0),
+                map(exists_paths, FilterFunc::Exists),
+                preceded(multispace0, char(')')),
+            ),
+        ),
+    )(input)
+}
+
+fn exists_paths(input: &[u8]) -> IResult<&[u8], Vec<Path<'_>>> {
+    map(
+        pair(
+            alt((
+                value(Path::Root, char('$')),
+                value(Path::Current, char('@')),
+            )),
+            many0(path),
+        ),
+        |(pre, mut paths)| {
+            paths.insert(0, pre);
+            paths
+        },
+    )(input)
 }
 
 fn expr_and(input: &[u8], root_predicate: bool) -> IResult<&[u8], Expr<'_>> {
