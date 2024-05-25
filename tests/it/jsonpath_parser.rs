@@ -53,6 +53,7 @@ fn test_json_path() {
         // exists expression
         r#"$.store.book?(exists(@.price?(@ > 20)))"#,
         r#"$.store?(exists(@.book?(exists(@.category?(@ == "fiction")))))"#,
+        r#"$.store.book?(starts with "Nigel")"#,
     ];
 
     for case in cases {

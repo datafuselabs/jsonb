@@ -366,7 +366,7 @@ fn expr_atom(input: &[u8], root_predicate: bool) -> IResult<&[u8], Expr<'_>> {
 }
 
 fn filter_func(input: &[u8]) -> IResult<&[u8], FilterFunc<'_>> {
-    alt((exists,))(input)
+    alt((exists, starts_with))(input)
 }
 
 fn exists(input: &[u8]) -> IResult<&[u8], FilterFunc<'_>> {
@@ -396,6 +396,13 @@ fn exists_paths(input: &[u8]) -> IResult<&[u8], Vec<Path<'_>>> {
             paths.insert(0, pre);
             paths
         },
+    )(input)
+}
+
+fn starts_with(input: &[u8]) -> IResult<&[u8], FilterFunc<'_>> {
+    preceded(
+        tag("starts with"),
+        preceded(multispace0, map(string, FilterFunc::StartsWith)),
     )(input)
 }
 
@@ -435,4 +442,19 @@ fn expr_or(input: &[u8], root_predicate: bool) -> IResult<&[u8], Expr<'_>> {
             expr
         },
     )(input)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_starts_with() {
+        let input = r#"starts with "Nigel""#;
+        let res = starts_with(input.as_bytes()).unwrap();
+        assert_eq!(
+            res,
+            (&b""[..], FilterFunc::StartsWith(Cow::Borrowed("Nigel")))
+        );
+    }
 }

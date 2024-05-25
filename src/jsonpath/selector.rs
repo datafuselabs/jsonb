@@ -466,6 +466,7 @@ impl<'a> Selector<'a> {
             },
             Expr::FilterFunc(filter_expr) => match filter_expr {
                 FilterFunc::Exists(paths) => self.eval_exists(root, pos, paths),
+                FilterFunc::StartsWith(prefix) => self.eval_starts_with(root, pos, prefix),
             },
             _ => todo!(),
         }
@@ -474,6 +475,10 @@ impl<'a> Selector<'a> {
     fn eval_exists(&'a self, root: &'a [u8], pos: &Position, paths: &[Path<'a>]) -> bool {
         let poses = self.find_positions(root, Some(pos), paths);
         !poses.is_empty()
+    }
+
+    fn eval_starts_with(&'a self, _root: &'a [u8], _pos: &Position, _prefix: &str) -> bool {
+        false
     }
 
     fn convert_expr_val(&'a self, root: &'a [u8], pos: &Position, expr: Expr<'a>) -> ExprValue<'a> {

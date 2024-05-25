@@ -929,3 +929,28 @@ JsonPath {
 }
 
 
+---------- Input ----------
+$.store.book?(starts with "Nigel")
+---------- Output ---------
+$.store.book?(starts with Nigel)
+---------- AST ------------
+JsonPath {
+    paths: [
+        Root,
+        DotField(
+            "store",
+        ),
+        DotField(
+            "book",
+        ),
+        FilterExpr(
+            FilterFunc(
+                StartsWith(
+                    "Nigel",
+                ),
+            ),
+        ),
+    ],
+}
+
+
