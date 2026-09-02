@@ -1003,12 +1003,9 @@ impl<'a> Selector<'a> {
 
         for lval in lvals.iter() {
             for rval in rvals.iter() {
-                if let Some(res) = self.compare_value(op, lval.clone(), rval.clone()) {
-                    if res {
-                        return Some(true);
-                    }
-                } else {
-                    return None;
+                let res = self.compare_value(op, lval.clone(), rval.clone())?;
+                if res {
+                    return Some(true);
                 }
             }
         }

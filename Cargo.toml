@@ -41,14 +41,14 @@ serde_json = { version = "1.0", default-features = false, features = ["std"] }
 zmij = "1.0"
 
 [dev-dependencies]
-goldenfile = "1.8"
-serde_json = "1.0"
-json-deserializer = "0.4.4"
-simd-json = "0.15.0"
-mockalloc = "0.1.2"
 criterion = "0.5.1"
-proptest = "1.7"
+goldenfile = "1.8"
+json-deserializer = "0.4.4"
 json-five = "0.3.0"
+mockalloc = "0.1.2"
+proptest = "1.7"
+serde_json = "1.0"
+simd-json = "0.15.0"
 
 [features]
 default = ["databend", "preserve_order", "arbitrary_precision"]

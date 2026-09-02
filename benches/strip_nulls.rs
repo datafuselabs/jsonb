@@ -40,7 +40,7 @@ fn strip_value_nulls(val: &mut Value<'_>) {
             }
         }
         Value::Object(ref mut obj) => {
-            for (_, v) in obj.iter_mut() {
+            for v in obj.values_mut() {
                 strip_value_nulls(v);
             }
             obj.retain(|_, v| !matches!(v, Value::Null));

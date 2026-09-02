@@ -55,17 +55,17 @@ use crate::constants::UINT64_MAX;
 use crate::constants::UINT64_MIN;
 
 // JSON literal constants
-const NULL_LOWERCASE: [u8; 4] = [b'n', b'u', b'l', b'l'];
-const NULL_UPPERCASE: [u8; 4] = [b'N', b'U', b'L', b'L'];
-const TRUE_LOWERCASE: [u8; 4] = [b't', b'r', b'u', b'e'];
-const TRUE_UPPERCASE: [u8; 4] = [b'T', b'R', b'U', b'E'];
-const FALSE_LOWERCASE: [u8; 5] = [b'f', b'a', b'l', b's', b'e'];
-const FALSE_UPPERCASE: [u8; 5] = [b'F', b'A', b'L', b'S', b'E'];
+const NULL_LOWERCASE: [u8; 4] = *b"null";
+const NULL_UPPERCASE: [u8; 4] = *b"NULL";
+const TRUE_LOWERCASE: [u8; 4] = *b"true";
+const TRUE_UPPERCASE: [u8; 4] = *b"TRUE";
+const FALSE_LOWERCASE: [u8; 5] = *b"false";
+const FALSE_UPPERCASE: [u8; 5] = *b"FALSE";
 
-const NAN_LOWERCASE: [u8; 3] = [b'n', b'a', b'n'];
-const NAN_UPPERCASE: [u8; 3] = [b'N', b'A', b'N'];
-const INFINITY_LOWERCASE: [u8; 8] = [b'i', b'n', b'f', b'i', b'n', b'i', b't', b'y'];
-const INFINITY_UPPERCASE: [u8; 8] = [b'I', b'N', b'F', b'I', b'N', b'I', b'T', b'Y'];
+const NAN_LOWERCASE: [u8; 3] = *b"nan";
+const NAN_UPPERCASE: [u8; 3] = *b"NAN";
+const INFINITY_LOWERCASE: [u8; 8] = *b"infinity";
+const INFINITY_UPPERCASE: [u8; 8] = *b"INFINITY";
 
 #[cfg(feature = "arbitrary_precision")]
 static POWER_TABLE: std::sync::LazyLock<[i256; 39]> = std::sync::LazyLock::new(|| {

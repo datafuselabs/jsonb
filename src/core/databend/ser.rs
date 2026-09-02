@@ -1031,7 +1031,7 @@ impl<'a> Encoder<'a> {
         let (mut object_len, mut jentry_index) = self.base_encoder.encode_object_header(obj.len());
 
         // encode all keys first
-        for (key, _) in obj.iter() {
+        for key in obj.keys() {
             let len = key.len();
             object_len += len;
             self.base_encoder.buf.extend_from_slice(key.as_bytes());
@@ -1040,7 +1040,7 @@ impl<'a> Encoder<'a> {
         }
 
         // encode all values
-        for (_, value) in obj.iter() {
+        for value in obj.values() {
             let jentry = self.encode_value(value);
             object_len += jentry.length as usize;
             self.base_encoder.replace_jentry(jentry, &mut jentry_index);

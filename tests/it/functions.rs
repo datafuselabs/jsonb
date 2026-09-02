@@ -2044,6 +2044,155 @@ fn test_to_serde_json() {
 }
 
 #[test]
+fn test_visit_scalar_key_paths() {
+    let json = r#"{"user":{"name":"Alice","scores":[85,92]},"empty":{}}"#;
+    let jsonb = json.parse::<OwnedJsonb>().unwrap();
+    let raw_jsonb = jsonb.as_raw();
+
+    let mut paths = Vec::new();
+    raw_jsonb
+        .visit_scalar_key_paths(false, |path| {
+            paths.push(KeyPaths {
+                paths: path.to_vec(),
+            });
+            Ok(())
+        })
+        .unwrap();
+    assert_eq!(
+        paths,
+        vec![
+            KeyPaths {
+                paths: vec![KeyPath::Name(Cow::Borrowed("empty"))],
+            },
+            KeyPaths {
+                paths: vec![
+                    KeyPath::Name(Cow::Borrowed("user")),
+                    KeyPath::Name(Cow::Borrowed("name")),
+                ],
+            },
+            KeyPaths {
+                paths: vec![
+                    KeyPath::Name(Cow::Borrowed("user")),
+                    KeyPath::Name(Cow::Borrowed("scores")),
+                    KeyPath::Index(0),
+                ],
+            },
+            KeyPaths {
+                paths: vec![
+                    KeyPath::Name(Cow::Borrowed("user")),
+                    KeyPath::Name(Cow::Borrowed("scores")),
+                    KeyPath::Index(1),
+                ],
+            },
+        ]
+    );
+
+    paths.clear();
+    raw_jsonb
+        .visit_scalar_key_paths(true, |path| {
+            paths.push(KeyPaths {
+                paths: path.to_vec(),
+            });
+            Ok(())
+        })
+        .unwrap();
+    assert_eq!(
+        paths,
+        vec![
+            KeyPaths {
+                paths: vec![KeyPath::Name(Cow::Borrowed("empty"))],
+            },
+            KeyPaths {
+                paths: vec![
+                    KeyPath::Name(Cow::Borrowed("user")),
+                    KeyPath::Name(Cow::Borrowed("name")),
+                ],
+            },
+            KeyPaths {
+                paths: vec![
+                    KeyPath::Name(Cow::Borrowed("user")),
+                    KeyPath::Name(Cow::Borrowed("scores")),
+                ],
+            },
+        ]
+    );
+}
+
+#[test]
+fn test_visit_scalar_key_values() {
+    let json = r#"{"empty":{},"null":null,"user":{"name":"Alice","scores":[85,92]}}"#;
+    let jsonb = json.parse::<OwnedJsonb>().unwrap();
+    let raw_jsonb = jsonb.as_raw();
+
+    let mut values = Vec::new();
+    raw_jsonb
+        .visit_scalar_key_values(false, |paths, value| {
+            values.push((
+                KeyPaths {
+                    paths: paths.to_vec(),
+                },
+                value,
+            ));
+            Ok(())
+        })
+        .unwrap();
+    assert_eq!(values, raw_jsonb.extract_scalar_key_values(false).unwrap());
+    assert_eq!(values.len(), 5);
+    assert!(values.iter().any(|(paths, value)| {
+        paths.paths == vec![KeyPath::Name(Cow::Borrowed("null"))] && *value == Value::Null
+    }));
+    assert!(values.iter().any(|(paths, value)| {
+        paths.paths
+            == vec![
+                KeyPath::Name(Cow::Borrowed("user")),
+                KeyPath::Name(Cow::Borrowed("scores")),
+                KeyPath::Index(1),
+            ]
+            && *value == Value::Number(Number::UInt64(92))
+    }));
+
+    values.clear();
+    raw_jsonb
+        .visit_scalar_key_values(true, |paths, value| {
+            values.push((
+                KeyPaths {
+                    paths: paths.to_vec(),
+                },
+                value,
+            ));
+            Ok(())
+        })
+        .unwrap();
+    assert_eq!(values, raw_jsonb.extract_scalar_key_values(true).unwrap());
+    assert_eq!(values.len(), 4);
+    assert!(values.iter().any(|(paths, value)| {
+        paths.paths
+            == vec![
+                KeyPath::Name(Cow::Borrowed("user")),
+                KeyPath::Name(Cow::Borrowed("scores")),
+            ]
+            && *value
+                == Value::Array(vec![
+                    Value::Number(Number::UInt64(85)),
+                    Value::Number(Number::UInt64(92)),
+                ])
+    }));
+
+    let root = "42".parse::<OwnedJsonb>().unwrap();
+    let mut visited = false;
+    root.as_raw()
+        .visit_scalar_key_values(false, |_, _| {
+            visited = true;
+            Ok(())
+        })
+        .unwrap();
+    assert!(!visited);
+
+    let error = raw_jsonb.visit_scalar_key_values(false, |_, _| Err(Error::InvalidJson));
+    assert_eq!(error, Err(Error::InvalidJson));
+}
+
+#[test]
 fn test_extract_scalar_key_values() {
     // Test case 1: Simple object with scalar values
     let json = r#"{"name": "John", "age": 30, "active": true}"#;
