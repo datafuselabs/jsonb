@@ -75,6 +75,8 @@ pub mod keypath;
 mod number;
 mod owned;
 mod parser;
+#[allow(dead_code)]
+mod parser_direct;
 mod raw;
 mod util;
 mod value;
@@ -96,6 +98,8 @@ pub use parser::parse_owned_jsonb_standard_mode_with_buf;
 pub use parser::parse_owned_jsonb_with_buf;
 pub use parser::parse_value;
 pub use parser::parse_value_standard_mode;
+pub use parser_direct::parse_owned_jsonb_direct;
+pub use parser_direct::parse_owned_jsonb_standard_mode_direct;
 pub use raw::from_raw_jsonb;
 pub use raw::RawJsonb;
 pub use value::*;

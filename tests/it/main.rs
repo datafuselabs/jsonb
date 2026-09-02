@@ -19,3 +19,4 @@ mod jsonpath_parser;
 mod keypath_parser;
 mod number;
 mod parser;
+mod parser_owned;
